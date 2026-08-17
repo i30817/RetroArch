@@ -1,0 +1,44 @@
+name: Manual Bisect Android Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_hash:
+        description: 'The full or short Git commit SHA to build'
+        required: true
+        default: 'HEAD'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history so GitHub can find your old commit
+          fetch-depth: 0 
+
+      - name: Checkout Specific Commit
+        run: |
+          git checkout ${{ github.event.inputs.commit_hash }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build APK via Gradle
+        run: |
+          cd pkg/android
+          chmod +x gradlew
+          ./gradlew assembleNormalRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: retroarch-bisect-${{ github.event.inputs.commit_hash }}
+          path: pkg/android/pkg/build/outputs/apk/normal/release/*.apk
