@@ -33,7 +33,8 @@ jobs:
 
       - name: Build APK via Gradle
         run: |
-          cd pkg/android
+          # Changed to target the correct nested 'phoenix' directory
+          cd pkg/android/phoenix
           chmod +x gradlew
           ./gradlew assembleNormalRelease
 
@@ -41,4 +42,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: retroarch-bisect-${{ github.event.inputs.commit_hash }}
-          path: pkg/android/pkg/build/outputs/apk/normal/release/*.apk
+          # Path updated to look inside the phoenix directory hierarchy
+          path: pkg/android/phoenix/pkg/build/outputs/apk/normal/release/*.apk
